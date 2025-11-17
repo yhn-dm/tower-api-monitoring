@@ -42,7 +42,6 @@ export class ProviderComponent implements OnInit, AfterViewInit {
           this.incidents = inc;
           this.loading = false;
 
-          // chart must be created once DOM is ready
           setTimeout(() => this.renderLatencyChart(), 50);
         });
     });
@@ -129,7 +128,7 @@ renderLatencyChart() {
   }
 
 getDuration(start: string | null, end: string | null): string {
-  if (!start || !end) return "—"; // ❗Importante ligne de sécurité
+  if (!start || !end) return "—";
 
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();

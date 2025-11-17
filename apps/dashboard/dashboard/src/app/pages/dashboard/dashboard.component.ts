@@ -72,7 +72,6 @@ export class DashboardComponent implements OnInit {
 
   search: string = "";
 
-  // ❗ NOUVEAUX TYPES DE STATUT
   filter: "all" | "operational" | "degraded" | "down" = "all";
 
   loading = true;
@@ -96,7 +95,7 @@ export class DashboardComponent implements OnInit {
 
         return {
           providerName: r.name,
-          status,       // 🔥 now operational | degraded | down
+          status,      
 
           lastLatency: last,
           avgLatency3h: avg,

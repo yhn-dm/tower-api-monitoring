@@ -8,7 +8,7 @@ export async function httpCheck(url: string, method: string) {
       url,
       method,
       timeout: 7000,
-      validateStatus: () => true // important
+      validateStatus: () => true 
     });
 
     const latency = Date.now() - start;

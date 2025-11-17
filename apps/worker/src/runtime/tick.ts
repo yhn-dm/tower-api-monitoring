@@ -12,7 +12,7 @@ export async function runTick() {
       include: { provider: true }
     });
   } catch (err) {
-    console.error("❌ Impossible de charger les endpoints :", err);
+    console.error("Impossible de charger les endpoints :", err);
     return;
   }
 
@@ -41,12 +41,11 @@ for (const ep of endpoints) {
     });
 
   } catch (err) {
-    console.error(`❌ Erreur lors du test de ${ep.url}`, err);
+    console.error(`Erreur lors du test de ${ep.url}`, err);
   }
 }
 
 
-  // Détection incidents pour CHAQUE provider
   const uniqueProviders: number[] = Array.from(
   new Set(endpoints.map((ep: any) => ep.providerId))
 
@@ -57,7 +56,7 @@ for (const ep of endpoints) {
     try {
       await detectIncident(providerId);
     } catch (err) {
-      console.error(`❌ Erreur detectIncident provider ${providerId}`, err);
+      console.error(`Erreur detectIncident provider ${providerId}`, err);
     }
   }
 

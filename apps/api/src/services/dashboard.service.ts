@@ -15,7 +15,6 @@ export class DashboardService {
       const endpointIds = p.endpoints.map(e => e.id);
       if (endpointIds.length === 0) continue;
 
-      // ---------- 1. LAST CHECK ----------
       const lastCheck = await prisma.checkResult.findFirst({
         where: { endpointId: { in: endpointIds }},
         orderBy: { checkedAt: "desc" }
@@ -23,7 +22,6 @@ export class DashboardService {
 
       const lastLatency = lastCheck?.latencyMs ?? null;
 
-      // ---------- 2. AVG LATENCY (3h) ----------
       const avg3h = await prisma.checkResult.aggregate({
         _avg: { latencyMs: true },
         where: {
@@ -34,7 +32,6 @@ export class DashboardService {
 
       const avgLatency3h = avg3h._avg.latencyMs ?? null;
 
-      // ---------- 3. ERROR RATE (24h) ----------
       const last24h = await prisma.checkResult.groupBy({
         by: ["status"],
         where: {
@@ -59,7 +56,6 @@ export class DashboardService {
       const errorRate24h =
         total24h === 0 ? 0 : errors24h / total24h;
 
-      // ---------- 4. UPTIME ----------
       const uptime24h =
         total24h === 0
           ? 100
@@ -67,7 +63,6 @@ export class DashboardService {
 
       const incidents24h = errors24h;
 
-      // ---------- 5. AVG RESPONSE SIZE ----------
       const avgSize = await prisma.checkResult.aggregate({
         _avg: { responseSizeBytes: true },
         where: {
@@ -78,13 +73,11 @@ export class DashboardService {
 
       const avgResponseSize = avgSize._avg.responseSizeBytes ?? null;
 
-      // ---------- 6. STATUS ----------
       let status: "operational" | "degraded" | "down" = "operational";
 
 if (uptime24h < 95 || errorRate24h > 0.1) status = "down";
 else if (uptime24h < 99) status = "degraded";
 
-      // ---------- 7. TREND ----------
     let trend: "up" | "down" | "stable" = "stable";
 
     if (lastLatency && avgLatency3h) {

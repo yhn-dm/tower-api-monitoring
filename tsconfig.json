@@ -6,46 +6,5 @@
     { "path": "libs/contracts" },
     { "path": "apps/worker" },
     { "path": "apps/api" }
-    //{ "path": "apps/dashboard" }
   ]
-  /*"extends": "./tsconfig.base.json",
-  "compilerOptions": {
-
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "lib": ["ES2020"],
-    "allowJs": false,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-
-
-    "baseUrl": ".",
-    "paths": {
-      "@db/*": ["libs/db/src/*"],
-      "@contracts/*": ["libs/contracts/src/*"],
-      "@shared/*": ["libs/shared/src/*"]
-    },
-
-
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-
-    "verbatimModuleSyntax": false,
-
-
-    "declaration": false,
-    "declarationMap": false,
-    "sourceMap": true,
-
-
-    "jsx": "react-jsx"
-  },
-
-  "include": [],
-
-  "exclude": ["node_modules", "dist"]*/
 }

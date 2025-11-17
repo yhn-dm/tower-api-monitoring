@@ -14,11 +14,11 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
 
-    // Voici la partie cruciale pour réparer les erreurs
+
     importProvidersFrom(
-      CommonModule,   // pipes: number, date, titlecase + ngClass
-      FormsModule,    // ngModel
-      RouterModule    // routerLink
+      CommonModule,   
+      FormsModule,    
+      RouterModule    
     )
   ]
 };

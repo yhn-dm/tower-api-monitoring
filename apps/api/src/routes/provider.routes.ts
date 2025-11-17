@@ -7,12 +7,12 @@ const router: IRouter = Router();
 const providerService = new ProviderService();
 const dashboardService = new DashboardService();
 
-// GET /providers
+
 router.get("/", async (_req, res) => {
   res.json(await providerService.getAll());
 });
 
-// GET /providers/:slug   <-- 🔥 ROUTE MANQUANTE ICI
+
 router.get("/:slug", async (req, res) => {
   const slug = req.params.slug;
 
@@ -26,12 +26,12 @@ router.get("/:slug", async (req, res) => {
   res.json(provider);
 });
 
-// GET /providers/:slug/status
+
 router.get("/:slug/status", async (req, res) => {
   res.json(await providerService.getStatus(req.params.slug));
 });
 
-// POST /providers
+
 router.post("/", async (req, res) => {
   res.json(await providerService.create(req.body));
 });

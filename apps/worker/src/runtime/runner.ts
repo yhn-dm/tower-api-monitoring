@@ -4,7 +4,7 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const interval = 60_000; // 60s
+const interval = 60_000;
 
 export async function startWorker() {
   console.log("🚀 Worker started");
