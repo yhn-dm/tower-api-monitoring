@@ -1,0 +1,77 @@
+# =========================================
+# Node / PNPM
+# =========================================
+node_modules/
+pnpm-lock.yaml
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================================
+# Environment files
+# =========================================
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# Prisma (NE PAS PUSH les DB locales)
+prisma/dev.db
+prisma/dev.db-journal
+
+# =========================================
+# Build / Output
+# =========================================
+dist/
+build/
+out/
+.tmp/
+temp/
+*.tsbuildinfo
+
+# =========================================
+# Angular specific
+# =========================================
+.angular/
+.angular/cache/
+apps/dashboard/dashboard/.angular/
+apps/dashboard/dashboard/.angular/cache/
+apps/dashboard/dashboard/.vscode/
+
+# =========================================
+# TypeScript
+# =========================================
+*.d.ts
+*.js.map
+
+# =========================================
+# Logs & process filesystem
+# =========================================
+*.pid
+*.seed
+trace.txt
+project-tree.txt
+project-structure.txt
+
+# =========================================
+# IDE / Editor
+# =========================================
+.vscode/
+.idea/
+.DS_Store
+
+# =========================================
+# Generated folders (libs/shared, libs/contracts, libs/db)
+# =========================================
+libs/**/dist/
+apps/**/dist/
+
+# =========================================
+# ignore build output from worker
+# =========================================
+apps/worker/dist/
+apps/api/dist/
+apps/dashboard/dashboard/dist/
+

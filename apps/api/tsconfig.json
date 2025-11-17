@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+
+    "rootDir": "src",
+    "outDir": "dist",
+
+    "strict": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "composite": false
+  },
+  "include": ["src"],
+  "exclude": ["dist"],
+  "references": [
+    { "path": "../../libs/db" },
+    { "path": "../../libs/contracts" },
+    { "path": "../../libs/shared" }
+  ]
+}

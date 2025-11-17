@@ -1,0 +1,114 @@
+// ------------------------------------------------------------
+//  API TOWER - Prisma Schema (Final Version)
+//  Tables: Provider, Endpoint, CheckResult, IncidentEvent
+// ------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum CheckStatus {
+  UP
+  DOWN
+  TIMEOUT
+  ERROR
+}
+
+enum IncidentType {
+  DOWN
+  SLOW
+  ERROR
+}
+
+// ------------------------------------------------------------
+// TABLE: Provider
+// ------------------------------------------------------------
+model Provider {
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique @db.VarChar(64)
+  name      String    @db.VarChar(128)
+  logoUrl   String?   @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  endpoints Endpoint[]
+  incidents IncidentEvent[]
+
+  @@index([name])
+}
+
+// ------------------------------------------------------------
+// TABLE: Endpoint
+// ------------------------------------------------------------
+model Endpoint {
+  id          Int       @id @default(autoincrement())
+  providerId  Int
+  url         String    @db.VarChar(512)
+  method      String    @default("GET") @db.VarChar(8)
+  region      String    @default("global") @db.VarChar(32)
+  isEnabled   Boolean   @default(true)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  provider    Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  checks      CheckResult[]
+
+  @@index([providerId])
+  @@index([providerId, isEnabled])
+  @@index([url])
+}
+
+// ------------------------------------------------------------
+// TABLE: CheckResult (append-only)
+// ------------------------------------------------------------
+model CheckResult {
+  id               BigInt      @id @default(autoincrement())
+  endpointId       Int
+  status           CheckStatus
+  httpStatus       Int?        @db.SmallInt
+  latencyMs        Int?
+  responseSizeBytes Int        @default(0)
+  error            String?     @db.VarChar(255)
+  checkedAt        DateTime
+  region           String      @default("global") @db.VarChar(32)
+
+  // Relation
+  endpoint         Endpoint    @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId, checkedAt])
+  @@index([checkedAt])
+  @@index([status])
+}
+
+// ------------------------------------------------------------
+// TABLE: IncidentEvent
+// ------------------------------------------------------------
+model IncidentEvent {
+  id         Int          @id @default(autoincrement())
+  providerId Int
+  startAt    DateTime
+  endAt      DateTime?
+  type       IncidentType
+  message    String?      @db.VarChar(255)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  // Relation
+  provider   Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([startAt])
+  @@index([type])
+}

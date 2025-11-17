@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@tower/db": ["libs/db/src/index.ts"],
+      "@tower/db/*": ["libs/db/src/*"],
+
+      "@tower/contracts": ["libs/contracts/src/index.ts"],
+      "@tower/contracts/*": ["libs/contracts/src/*"],
+
+      "@tower/shared": ["libs/shared/src/index.ts"],
+      "@tower/shared/*": ["libs/shared/src/*"]
+    },
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
