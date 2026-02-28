@@ -10,23 +10,29 @@ Monitor external APIs, track uptime and latency, and see incidents in one place.
 
 ## Screenshots (UI)
 
-<p align="center"><strong>Dashboard</strong></p>
-<p align="center"><img src="screenshots/dashboard.png" alt="Dashboard" width="100%"></p>
+**Dashboard**
 
-<p align="center"><strong>Incidents</strong></p>
-<p align="center"><img src="screenshots/incidents.png" alt="Incidents" width="100%"></p>
+<img src="screenshots/dashboard.png" alt="Dashboard" width="100%">
 
-<p align="center"><strong>Provider detail</strong></p>
-<p align="center"><img src="screenshots/provider.png" alt="Provider" width="100%"></p>
+**API monitored opened** (dashboard with provider row expanded)
 
-<p align="center"><strong>API Management (list)</strong></p>
-<p align="center"><img src="screenshots/API Management.png" alt="API Management" width="100%"></p>
+<img src="screenshots/API Opened.png" alt="API monitored opened" width="100%">
 
-<p align="center"><strong>API Management (opened)</strong></p>
-<p align="center"><img src="screenshots/API Management Opened.png" alt="API Management Opened" width="100%"></p>
+**Provider detail**
 
-<p align="center"><strong>Provider page (API opened)</strong></p>
-<p align="center"><img src="screenshots/API Opened.png" alt="API Opened" width="100%"></p>
+<img src="screenshots/provider.png" alt="Provider detail" width="100%">
+
+**Incidents**
+
+<img src="screenshots/incidents.png" alt="Incidents" width="100%">
+
+**API Management (list)**
+
+<img src="screenshots/API Management.png" alt="API Management" width="100%">
+
+**API Management (opened)**
+
+<img src="screenshots/API Management Opened.png" alt="API Management Opened" width="100%">
 
 ---
 
