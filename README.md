@@ -169,11 +169,11 @@ Run `pnpm prisma migrate deploy` on the target database. Use a process manager (
 Things to keep in mind:
 
 - **Authentication:** The API doesn’t enforce auth yet. Anyone with network access can call CRUD and read endpoints. For production, add API keys or another mechanism and protect sensitive routes.
-- **CORS:** In dev we only allow `http://localhost*`. In production, set an explicit list of allowed origins (see [docs/SECURITY.md](docs/SECURITY.md)).
+- **CORS:** In dev we only allow `http://localhost*`. In production, set an explicit list of allowed origins (see [docs/SECURITY.md](docs/SECURITY-AUDIT.md)).
 - **Rate limiting:** There’s no rate limiting on the API yet. Consider a middleware or reverse proxy to limit abuse.
 - **Dependencies:** Run `pnpm audit` and fix or explicitly accept reported issues. Prioritize high/critical and keep dependencies up to date.
 
-Full audit and recommendations: [docs/SECURITY.md](docs/SECURITY.md).
+Full audit and recommendations: [docs/SECURITY.md](docs/SECURITY-AUDIT.md).
 
 ---
 
