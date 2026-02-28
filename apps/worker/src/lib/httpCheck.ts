@@ -1,6 +1,9 @@
+/**
+ * One HTTP request; returns status, latency, and size (7s timeout).
+ */
 import axios, { AxiosError } from "axios";
 
-export async function httpCheck(url: string, method: string) {
+export async function performHttpCheck(url: string, method: string) {
   const start = Date.now();
 
   try {
@@ -8,7 +11,7 @@ export async function httpCheck(url: string, method: string) {
       url,
       method,
       timeout: 7000,
-      validateStatus: () => true 
+      validateStatus: () => true
     });
 
     const latency = Date.now() - start;
@@ -30,7 +33,7 @@ export async function httpCheck(url: string, method: string) {
   catch (err: any) {
     const latency = Date.now() - start;
 
-    // AxiosError
+    // handle Axios errors (timeout, network, etc.)
     if (err instanceof AxiosError) {
       if (err.code === "ECONNABORTED") {
         return {
@@ -51,7 +54,6 @@ export async function httpCheck(url: string, method: string) {
       };
     }
 
-    // Unknown error (rare)
     return {
       status: "ERROR" as const,
       httpStatus: null,

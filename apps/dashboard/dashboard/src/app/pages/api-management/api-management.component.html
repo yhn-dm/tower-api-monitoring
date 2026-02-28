@@ -1,0 +1,335 @@
+<!-- API Management page: provider and endpoint CRUD forms, list, delete confirmations. -->
+<div class="py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-foreground">API Management</h1>
+    <p class="text-sm text-muted-foreground mt-1">
+      Manage providers and their endpoints (CRUD).
+    </p>
+  </div>
+
+  <div *ngIf="errorMessage" class="monitoring-card mb-4 border-l-4 border-red-500 bg-red-500/10">
+    <p class="text-sm text-red-600 dark:text-red-400">{{ errorMessage }}</p>
+  </div>
+  <div *ngIf="successMessage" class="monitoring-card mb-4 border-l-4 border-green-500 bg-green-500/10">
+    <p class="text-sm text-green-600 dark:text-green-400">{{ successMessage }}</p>
+  </div>
+
+  <div class="mb-4">
+    <button
+      *ngIf="!showProviderForm"
+      type="button"
+      class="inline-flex items-center px-4 py-2 rounded-md bg-foreground text-background text-sm font-medium hover:opacity-90"
+      (click)="openProviderForm()"
+    >
+      Add a provider
+    </button>
+  </div>
+
+  <!-- New provider form -->
+  <div *ngIf="showProviderForm" class="monitoring-card mb-6">
+    <h2 class="text-lg font-medium text-foreground mb-4">New provider</h2>
+    <form (ngSubmit)="submitProvider()" class="space-y-4 max-w-md">
+      <div>
+        <label for="provider-slug" class="block text-sm font-medium text-foreground mb-1">Slug</label>
+        <input
+          id="provider-slug"
+          type="text"
+          class="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground"
+          [(ngModel)]="providerForm.slug"
+          name="slug"
+          maxlength="64"
+          placeholder="mon-api"
+        />
+        <p *ngIf="providerFormErrors['slug']" class="text-xs text-red-500 mt-1">
+          {{ providerFormErrors['slug'] }}
+        </p>
+      </div>
+      <div>
+        <label for="provider-name" class="block text-sm font-medium text-foreground mb-1">Name</label>
+        <input
+          id="provider-name"
+          type="text"
+          class="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground"
+          [(ngModel)]="providerForm.name"
+          name="name"
+          maxlength="128"
+          placeholder="Mon API"
+        />
+        <p *ngIf="providerFormErrors['name']" class="text-xs text-red-500 mt-1">
+          {{ providerFormErrors['name'] }}
+        </p>
+      </div>
+      <div>
+        <label for="provider-logo" class="block text-sm font-medium text-foreground mb-1">Logo URL (optional)</label>
+        <input
+          id="provider-logo"
+          type="text"
+          class="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground"
+          [(ngModel)]="providerForm.logoUrl"
+          name="logoUrl"
+          maxlength="255"
+          placeholder="https://..."
+        />
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          class="px-4 py-2 rounded-md bg-foreground text-background text-sm font-medium disabled:opacity-50"
+          [disabled]="providerSubmitting"
+        >
+          {{ providerSubmitting ? 'Creating...' : 'Create' }}
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-md border border-border text-sm font-medium hover:bg-muted"
+          (click)="cancelProviderForm()"
+          [disabled]="providerSubmitting"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading" class="monitoring-card text-center py-12 text-muted-foreground">
+    Loading providers...
+  </div>
+
+  <!-- Provider list -->
+  <div *ngIf="!loading && providers.length === 0" class="monitoring-card text-center py-12 text-muted-foreground">
+    No providers. Add one to get started.
+  </div>
+
+  <div *ngIf="!loading && providers.length > 0" class="space-y-3">
+    <div
+      *ngFor="let p of providers"
+      class="monitoring-card"
+    >
+      <div
+        class="flex items-center justify-between cursor-pointer"
+        (click)="toggleProvider(p)"
+      >
+        <div class="flex items-center gap-3">
+          <span class="text-foreground font-medium">{{ p.name }}</span>
+          <span class="text-xs text-muted-foreground">({{ p.slug }})</span>
+        </div>
+        <div class="flex items-center gap-2" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="text-xs px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground"
+            (click)="confirmDeleteProviderModal(p)"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isProviderExpanded(p)" class="mt-4 pt-4 border-t border-border">
+        <h3 class="text-sm font-medium text-foreground mb-3">Endpoints</h3>
+
+        <div *ngIf="(p.endpoints || []).length === 0" class="text-sm text-muted-foreground mb-3">
+          No endpoints.
+        </div>
+
+        <ul class="space-y-2 mb-4">
+          <li
+            *ngFor="let ep of p.endpoints || []"
+            class="flex items-center justify-between py-2 px-3 rounded bg-muted/50"
+          >
+            <ng-container *ngIf="!isEditing(ep)">
+              <div class="flex-1 min-w-0">
+                <span class="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">{{ ep.method }}</span>
+                <span class="text-sm text-foreground ml-2 truncate">{{ ep.url }}</span>
+                <span *ngIf="!ep.isEnabled" class="text-xs text-muted-foreground ml-2">(disabled)</span>
+              </div>
+              <div class="flex gap-2 ml-2">
+                <button
+                  type="button"
+                  class="text-xs px-2 py-1 rounded border border-border hover:bg-muted"
+                  (click)="startEditEndpoint(ep, p.id)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="text-xs px-2 py-1 rounded border border-red-500/50 text-red-600 hover:bg-red-500/10"
+                  (click)="confirmDeleteEndpointModal(ep, p.id)"
+                >
+                  Delete
+                </button>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="isEditing(ep)">
+              <div class="flex-1 space-y-2">
+                <input
+                  id="edit-endpoint-url-{{ ep.id }}"
+                  name="editEndpointUrl-{{ ep.id }}"
+                  type="text"
+                  class="w-full px-2 py-1 text-sm rounded border border-border bg-background"
+                  [(ngModel)]="editEndpointForm.url"
+                  placeholder="URL"
+                />
+                <select
+                  id="edit-endpoint-method-{{ ep.id }}"
+                  name="editEndpointMethod-{{ ep.id }}"
+                  class="px-2 py-1 text-sm rounded border border-border bg-background"
+                  [(ngModel)]="editEndpointForm.method"
+                >
+                  <option *ngFor="let m of httpMethods" [value]="m">{{ m }}</option>
+                </select>
+                <input
+                  id="edit-endpoint-region-{{ ep.id }}"
+                  name="editEndpointRegion-{{ ep.id }}"
+                  type="text"
+                  class="w-full px-2 py-1 text-sm rounded border border-border bg-background"
+                  [(ngModel)]="editEndpointForm.region"
+                  placeholder="Region"
+                />
+                <label class="flex items-center gap-2 text-sm" [attr.for]="'edit-endpoint-enabled-' + ep.id">
+                  <input id="edit-endpoint-enabled-{{ ep.id }}" name="editEndpointEnabled-{{ ep.id }}" type="checkbox" [(ngModel)]="editEndpointForm.isEnabled" />
+                  Enabled
+                </label>
+                <p *ngIf="editEndpointErrors['url']" class="text-xs text-red-500">{{ editEndpointErrors['url'] }}</p>
+              </div>
+              <div class="flex gap-2 ml-2">
+                <button
+                  type="button"
+                  class="text-xs px-2 py-1 rounded bg-foreground text-background"
+                  (click)="saveEndpoint()"
+                  [disabled]="editEndpointSubmitting"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  class="text-xs px-2 py-1 rounded border border-border"
+                  (click)="cancelEditEndpoint()"
+                  [disabled]="editEndpointSubmitting"
+                >
+                  Cancel
+                </button>
+              </div>
+            </ng-container>
+          </li>
+        </ul>
+
+        <div class="pt-3 border-t border-border">
+          <h4 class="text-xs font-medium text-muted-foreground mb-2">Add an endpoint</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
+            <div>
+              <input
+                id="add-endpoint-url-{{ p.id }}"
+                name="addEndpointUrl-{{ p.id }}"
+                type="url"
+                class="w-full px-2 py-1.5 text-sm rounded border border-border bg-background"
+                [(ngModel)]="getEndpointForm(p.id).url"
+                placeholder="https://..."
+              />
+              <p *ngIf="endpointFormErrors[p.id]?.['url']" class="text-xs text-red-500">
+                {{ endpointFormErrors[p.id]['url'] }}
+              </p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <select
+                id="add-endpoint-method-{{ p.id }}"
+                name="addEndpointMethod-{{ p.id }}"
+                class="px-2 py-1.5 text-sm rounded border border-border bg-background"
+                [(ngModel)]="getEndpointForm(p.id).method"
+              >
+                <option *ngFor="let m of httpMethods" [value]="m">{{ m }}</option>
+              </select>
+              <input
+                id="add-endpoint-region-{{ p.id }}"
+                name="addEndpointRegion-{{ p.id }}"
+                type="text"
+                class="w-24 px-2 py-1.5 text-sm rounded border border-border bg-background"
+                [(ngModel)]="getEndpointForm(p.id).region"
+                placeholder="Region"
+              />
+              <label class="flex items-center gap-1 text-sm" [attr.for]="'add-endpoint-enabled-' + p.id">
+                <input id="add-endpoint-enabled-{{ p.id }}" name="addEndpointEnabled-{{ p.id }}" type="checkbox" [(ngModel)]="getEndpointForm(p.id).isEnabled" />
+                Enabled
+              </label>
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded bg-foreground text-background text-sm"
+                (click)="addEndpoint(p)"
+                [disabled]="endpointSubmitting[p.id]"
+              >
+                {{ endpointSubmitting[p.id] ? 'Adding...' : 'Add' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="confirmDeleteProvider"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    (click)="cancelDeleteProvider()"
+  >
+    <div
+      class="bg-card border border-border rounded-lg shadow-lg p-6 max-w-md w-full mx-4"
+      (click)="$event.stopPropagation()"
+    >
+      <h3 class="text-lg font-semibold text-foreground mb-2">Delete provider?</h3>
+      <p class="text-sm text-muted-foreground mb-4">
+        "{{ confirmDeleteProvider.name }}" ({{ confirmDeleteProvider.slug }}) and all its endpoints will be deleted.
+      </p>
+      <div class="flex gap-2 justify-end">
+        <button
+          type="button"
+          class="px-4 py-2 rounded border border-border hover:bg-muted"
+          (click)="cancelDeleteProvider()"
+          [disabled]="deleteProviderInProgress"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+          (click)="deleteProvider()"
+          [disabled]="deleteProviderInProgress"
+        >
+          {{ deleteProviderInProgress ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="confirmDeleteEndpoint"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    (click)="cancelDeleteEndpoint()"
+  >
+    <div
+      class="bg-card border border-border rounded-lg shadow-lg p-6 max-w-md w-full mx-4"
+      (click)="$event.stopPropagation()"
+    >
+      <h3 class="text-lg font-semibold text-foreground mb-2">Delete endpoint?</h3>
+      <p class="text-sm text-muted-foreground mb-4 font-mono break-all">
+        {{ confirmDeleteEndpoint.endpoint.method }} {{ confirmDeleteEndpoint.endpoint.url }}
+      </p>
+      <div class="flex gap-2 justify-end">
+        <button
+          type="button"
+          class="px-4 py-2 rounded border border-border hover:bg-muted"
+          (click)="cancelDeleteEndpoint()"
+          [disabled]="deleteEndpointInProgress"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+          (click)="deleteEndpoint()"
+          [disabled]="deleteEndpointInProgress"
+        >
+          {{ deleteEndpointInProgress ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

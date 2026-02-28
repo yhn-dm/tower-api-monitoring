@@ -1,3 +1,6 @@
+/**
+ * Starts the Express server on PORT.
+ */
 import { createServer } from "./app";
 
 const port = process.env.PORT || 3000;

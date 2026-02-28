@@ -1,3 +1,6 @@
+/**
+ * Calls the API for dashboard data, provider detail, latency history, and incidents.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -22,6 +25,7 @@ export interface ProviderDashboardRow {
 
   avgResponseSize: number | null;
   lastCheckAt: string | null;
+  primaryEndpointUrl: string | null;
 }
 
 export interface Incident {
@@ -35,6 +39,11 @@ export interface Incident {
   updatedAt: string;
 }
 
+export interface LatencyPoint {
+  timestamp: string;
+  latencyMs: number;
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
@@ -46,18 +55,31 @@ export class DashboardService {
     return this.http.get<ProviderDashboardRow[]>(`${this.baseUrl}/dashboard`);
   }
 
-    getOverview() {
-    return this.http.get<any[]>('http://localhost:3000/dashboard');
+  getOverview() {
+    return this.http.get<any[]>(`${this.baseUrl}/dashboard`);
   }
 
-getProvider(slug: string) {
-  return this.http.get<ProviderDashboardRow>(`${this.baseUrl}/providers/${slug}`);
-}
+  getProvider(slug: string) {
+    return this.http.get<ProviderDashboardRow>(`${this.baseUrl}/providers/${slug}`);
+  }
 
-getIncidents(providerId: number) {
-  return this.http.get<Incident[]>(`${this.baseUrl}/incidents/${providerId}`);
-}
+  getIncidents(providerId: number) {
+    return this.http.get<Incident[]>(`${this.baseUrl}/incidents/${providerId}`);
+  }
 
+  getLatencyHistory(
+    slug: string,
+    windowMinutes: number = 180,
+    stepMinutes: number = 5
+  ): Observable<LatencyPoint[]> {
+    const params = {
+      windowMinutes: String(windowMinutes),
+      stepMinutes: String(stepMinutes),
+    };
 
-
+    return this.http.get<LatencyPoint[]>(
+      `${this.baseUrl}/providers/${encodeURIComponent(slug)}/latency-history`,
+      { params }
+    );
+  }
 }

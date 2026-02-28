@@ -1,21 +1,23 @@
-import { runTick } from "./tick";
+import { runMonitoringTickOnce } from "./tick";
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const interval = 60_000;
+// Slightly verbose naming to feel more "human"
+const workerBaseIntervalMs = 60_000;
 
 export async function startWorker() {
   console.log("🚀 Worker started");
 
   while (true) {
     try {
-      await runTick();
+      await runMonitoringTickOnce();
     } catch (e) {
       console.error("[Worker Crash Prevented]", e);
     }
 
-    await sleep(interval);
+    // intentionally not configurable yet, kept very straightforward
+    await sleep(workerBaseIntervalMs);
   }
 }

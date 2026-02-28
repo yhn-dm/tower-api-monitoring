@@ -1,1 +1,8 @@
-<router-outlet></router-outlet>
+<!-- Root layout: nav bar, system status bar, router outlet. -->
+<div class="min-h-screen bg-background">
+  <app-nav-bar></app-nav-bar>
+  <app-system-status-bar></app-system-status-bar>
+  <main class="max-w-7xl mx-auto px-6">
+    <router-outlet></router-outlet>
+  </main>
+</div>

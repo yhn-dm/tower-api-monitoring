@@ -1,157 +1,250 @@
-# API Verification Tower  
-Système complet de monitoring d’API en temps réel : dashboard interactif, worker distribué et API backend unifiée.
+# Tower API Monitoring
 
-API Verification Tower permet de suivre l’état de services externes, de détecter les incidents, d’afficher l’historique et de mesurer des métriques essentielles comme l’uptime ou la latence.
+Monitor external APIs, track uptime and latency, and see incidents in one place. You get a real-time dashboard, a backend API, and a worker that runs HTTP checks and keeps everything up to date.
 
----
+**Who it’s for:** Teams that want a simple, self-hosted way to watch multiple API providers and react when something goes down or gets slow.
 
-## Badges
+**Stack:** Angular 17 (dashboard), Express (API), Node (worker), Prisma, MySQL. Monorepo with pnpm workspaces.
 
-![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue)
-![Node.js](https://img.shields.io/badge/Node.js-18+-green)
-![Angular](https://img.shields.io/badge/Angular-17-red)
-![Prisma](https://img.shields.io/badge/Prisma-ORM-blue)
-![MySQL](https://img.shields.io/badge/Database-MySQL-orange)
-![PNPM](https://img.shields.io/badge/Monorepo-PNPM-yellow)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
+## Flow overview (sequence)
+
+How the dashboard loads data and how the worker runs checks and evaluates incidents:
+
+![Sequence: dashboard load and worker tick](docs/diagrams/sequence.png)
 
 ---
 
-## Démo et Screenshots
+## Contents
 
-Démo :  
-//
-
-### Screenshots :
-Vue générale du Dashboard
-![Dashboard](./screenshots/dashboard.png)
-
-Détails d’un provider
-![Provider](./screenshots/provider.png)
-
-Historique des incidents
-![Incidents](./screenshots/incidents.png)
-
----
-
-## Fonctionnalités
-
-### Dashboard
-- Vue globale de tous les providers monitorés  
-- Filtres par état (operational, degraded, down)  
-- Recherche instantanée  
-- Sparklines de tendances  
-- Uptime, latence, incidents, SLA 7 jours  
-- Page dédiée pour chaque provider
-
-### Worker
-- Exécute automatiquement les checks pour chaque endpoint  
-- Mesure la latence, détecte les erreurs, analyse les réponses  
-- Système d’incidents avec début et fin  
-- Facile à scaler ou distribuer
-
-### API Backend
-- API REST avec Express  
-- Prisma ORM + MySQL  
-- Routes disponibles :
-  - `/dashboard`  
-  - `/providers/:slug`  
-  - `/incidents/:providerId`  
-  - `/checks`  
-
-### Page Provider
-- Statut complet (operational / degraded / down)  
-- Graphique Chart.js : évolution de la latence  
-- Liste des endpoints monitorés  
-- Historique détaillé des incidents (durée, message, timestamps)
-
-### Architecture Monorepo
-- PNPM Workspaces  
-- Apps : API, Worker, Dashboard Angular  
-- Librairies internes : contracts, db, shared  
-- Structure pensée pour évoluer rapidement
+- [What it does](#what-it-does)
+- [Screenshots and diagrams](#screenshots-and-diagrams)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Launch](#launch)
+- [Security](#security)
+- [The three services](#the-three-services)
+- [How it works (under the hood)](#how-it-works-under-the-hood)
+- [Tests](#tests)
+- [Project structure](#project-structure)
+- [Technical choices](#technical-choices)
+- [Roadmap](#roadmap-ideas-no-commitment)
+- [Documentation](#documentation)
+- [License](#license)
 
 ---
 
-## Architecture (texte uniquement)
+## What it does
 
-### Principe général
+Tower API Monitoring is an end-to-end health monitoring system. You define providers and their endpoints; the worker checks them on a schedule, stores the results, and opens or closes incidents when things break or recover. The API aggregates that data, and the Angular dashboard lets you filter, sort, and drill into each provider.
 
-Le système repose sur trois composants majeurs :
+- **Dashboard** — Table of all providers with status, trend, uptime, latency, and incidents. Filters and sort; expandable rows with mini charts and recent incidents; a dedicated provider page with a full latency chart and incident timeline.
+- **API** — REST endpoints for dashboard rows, provider detail, latency history, incidents, and full CRUD for providers and endpoints (API Management).
+- **Worker** — Runs in a loop (every 60s by default): loads enabled endpoints, runs HTTP checks, writes results to the database, and evaluates incidents per provider (down or high latency).
 
-1. **API Backend (Node + Prisma)**  
-   Expose les données, orchestre les providers, stocke les résultats et incidents.
+---
 
-2. **Worker**  
-   Vérifie les endpoints en continu, calcule les métriques, déclare les incidents.
+## Screenshots and diagrams
 
-3. **Dashboard Angular**  
-   Interface utilisateur pour visualiser les données en temps réel.
+### UI
 
-Les données sont centralisées dans une base **MySQL**.
+| Dashboard | Incidents | Provider detail |
+|-----------|-----------|-----------------|
+| ![Dashboard](screenshots/Dashboard.png) | ![Incidents](screenshots/Incidents.png) | ![Provider](screenshots/Provider.png) |
+
+| API Management (list) | API Management (opened) | Provider page (API opened) |
+|----------------------|-------------------------|----------------------------|
+| ![API Management](screenshots/API%20Management.png) | ![API Management Opened](screenshots/API%20Management%20Opened.png) | ![API Opened](screenshots/API%20Opened.png) |
+
+### Architecture and data
+
+| High-level architecture | Monorepo packages |
+|-------------------------|-------------------|
+| ![Architecture](docs/diagrams/high%20level%20architecture.png) | ![Packages](docs/diagrams/packages_and_dependencies.png) |
+
+| Database schema | API flows | Incident lifecycle |
+|-----------------|-----------|---------------------|
+| ![Database](docs/diagrams/database.png) | ![API flow](docs/diagrams/API_flow.png) | ![Incident lifecycle](docs/diagrams/incident_lifecycle.png) |
 
 ---
 
 ## Installation
 
-### Prérequis
-- Node.js 18+
-- PNPM
-- MySQL
-- Prisma CLI
+### Prerequisites
 
-### Étapes
+- **Node.js** 18+ (LTS recommended)
+- **pnpm** 10.x (`npm install -g pnpm` or see [pnpm.io](https://pnpm.io))
+- **MySQL** (server and client for the database)
 
-Cloner le projet :
+### Steps
 
-```sh
-git clone https://github.com/yhn-dm/tower-api-monitoring.git
+1. Clone the repository:
 
-cd tower-api-monitoring
+   ```sh
+   git clone https://github.com/your-org/tower-api-monitoring.git
+   cd tower-api-monitoring
+   ```
+
+2. Install dependencies (from the repo root):
+
+   ```sh
+   pnpm install
+   ```
+
+3. Configure the database (see [Configuration](#configuration) below), then generate the Prisma client and apply migrations:
+
+   ```sh
+   pnpm prisma generate
+   pnpm prisma migrate dev
+   ```
+
+4. (Optional) Seed initial providers and endpoints:
+
+   ```sh
+   pnpm prisma db seed
+   ```
+
+---
+
+## Configuration
+
+### Environment variables
+
+| Variable        | Where        | Description                                      |
+|----------------|--------------|--------------------------------------------------|
+| `DATABASE_URL` | `prisma/.env`| MySQL connection string (e.g. `mysql://user:pass@localhost:3306/tower`) |
+| `PORT`         | API process  | Optional; API server port (default: 3000)        |
+
+Create `prisma/.env` if it doesn’t exist and set at least:
+
+```env
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/DATABASE"
 ```
 
-Installer les dépendances :
+The dashboard talks to the API at a configurable base URL (e.g. `http://localhost:3000` in dev). For production, set the API URL in the Angular app (environment or build-time).
 
-```sh
-pnpm install
+---
+
+## Launch
+
+### Development
+
+From the repo root:
+
+- **API:** `pnpm -C apps/api dev` — serves on http://localhost:3000 (or whatever you set in `PORT`)
+- **Worker:** `pnpm -C apps/worker dev` — runs the check loop every 60s
+- **Dashboard:** `pnpm -C apps/dashboard/dashboard start` or `cd apps/dashboard/dashboard && pnpm start` — dev server (e.g. http://localhost:4200)
+
+Run all three for a full local setup. The dashboard expects the API on port 3000 by default.
+
+### Production
+
+- **API:** `pnpm -C apps/api build` then run `node apps/api/dist/main.js`
+- **Worker:** `pnpm -C apps/worker build` then run `node apps/worker/dist/index.js`
+- **Dashboard:** `cd apps/dashboard/dashboard && pnpm run build` then serve the `dist/` output with nginx or any static host
+
+Run `pnpm prisma migrate deploy` on the target database. Use a process manager (e.g. PM2) or containers to keep the API and worker running. More detail in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+---
+
+## Security
+
+Things to keep in mind:
+
+- **Authentication:** The API doesn’t enforce auth yet. Anyone with network access can call CRUD and read endpoints. For production, add API keys or another mechanism and protect sensitive routes.
+- **CORS:** In dev we only allow `http://localhost*`. In production, set an explicit list of allowed origins (see [docs/SECURITY.md](docs/SECURITY.md)).
+- **Rate limiting:** There’s no rate limiting on the API yet. Consider a middleware or reverse proxy to limit abuse.
+- **Dependencies:** Run `pnpm audit` and fix or explicitly accept reported issues. Prioritize high/critical and keep dependencies up to date.
+
+Full audit and recommendations: [docs/SECURITY.md](docs/SECURITY.md).
+
+---
+
+## The three services
+
+| Service      | Role | Port / run mode | Main endpoints / behavior |
+|-------------|------|------------------|---------------------------|
+| **API**     | Serves dashboard data, provider detail, latency history, incidents, and API Management CRUD. | Listens on `PORT` (default 3000). | `/dashboard`, `/providers/:slug`, `/providers/:slug/latency-history`, `/incidents`, `/incidents/:providerId`, `/api-management/providers`, `/api-management/providers/:id`, `/api-management/providers/:id/endpoints`, `/api-management/endpoints/:id`. |
+| **Dashboard** | Angular SPA: main dashboard, provider page, incident history, API Management. | Dev server (e.g. 4200); in prod, static files only. | N/A (consumes API). |
+| **Worker**  | Runs HTTP checks for all enabled endpoints, writes `CheckResult` to the DB, and opens/closes incidents per provider. | No HTTP server; runs in a loop. | Checks every 60s by default; writes to MySQL via Prisma. |
+
+---
+
+## How it works (under the hood)
+
+1. **Worker** — Loads enabled endpoints from the database, calls each URL with Axios (7s timeout), and stores one `CheckResult` per endpoint (status, latency, size). Then, per provider, it decides whether to open a new incident (down or high latency) or close an existing one when the provider is healthy again.
+2. **API** — Reads from MySQL with Prisma. The dashboard service aggregates providers, endpoints, check results, and incident events into one row per provider (status, uptime, latency, trend). Other routes serve incidents, provider detail, latency history, and CRUD for providers and endpoints.
+3. **Dashboard** — Calls the API, shows the table and filters, and lets users open the API Management page to add or edit providers and endpoints. All state comes from the API; the worker keeps the data fresh in the background.
+
+---
+
+## Tests
+
+- **All (Vitest):** `pnpm test`
+- **API only:** `pnpm test:api`
+- **Worker only:** `pnpm test:worker`
+- **Dashboard (Jasmine/Karma):** `cd apps/dashboard/dashboard && pnpm test` (or `ng test`)
+- **Coverage:** `pnpm test:coverage` at the root (Vitest)
+
+More on layout and strategy: [docs/TESTING.md](docs/TESTING.md).
+
+---
+
+## Project structure
+
+```
+tower-api-monitoring/
+├── apps/
+│   ├── api/                 # Express API (routes, services, types)
+│   ├── dashboard/           # Angular app (dashboard project inside)
+│   └── worker/              # Check loop (lib, runtime, infra)
+├── libs/
+│   ├── db/                  # Prisma client (shared DB access)
+│   └── contracts/           # Shared TypeScript types
+├── prisma/
+│   ├── schema.prisma        # MySQL schema
+│   ├── migrations/          # Migration history
+│   └── seed.ts              # Seed script
+└── docs/                    # Architecture, flows, security, testing, etc.
 ```
 
-Configurer l’environnement :
+---
 
-```sh
-cp prisma/.env.example prisma/.env
-```
+## Technical choices
 
-Modifier ensuite la variable DATABASE_URL dans prisma/.env selon votre configuration MySQL.
+- **Angular** — Rich UI, strong typing, and a clear structure; works well for tables, filters, and multiple views.
+- **Express** — Simple and easy to extend with middleware (CORS, error handler, future auth or rate limit).
+- **Prisma** — Type-safe access to MySQL, migrations, and a single schema shared by the API and worker.
+- **MySQL** — Relational store for providers, endpoints, check results, and incidents; good for aggregations and time-series-style queries.
 
-Appliquer les migrations Prisma :
+You could swap in Nest or Fastify for Express, React or Vue for Angular, or PostgreSQL for MySQL with relatively small changes if you ever need to.
 
-```sh
-pnpm exec prisma migrate dev
-```
+---
 
-Exécuter le seed initial :
+## Roadmap (ideas, no commitment)
 
-```sh
-pnpm exec ts-node prisma/seed.ts
-```
+Possible next steps:
 
-Démarrage
+- **Authentication** — API key or OAuth for the API and/or dashboard.
+- **Notifications** — Alerts (email, Slack, webhook) when incidents open or close.
+- **Multi-region** — Run checks from several regions and store region in results.
+- **Rate limiting and hardening** — Middleware or reverse proxy; stricter CORS and security headers in production.
 
-API Backend :
+---
 
-```sh
-pnpm -C apps/api dev
-```
+## Documentation
 
-Worker :
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Monorepo layout, apps, libs, data flow
+- [docs/diagrams/](docs/diagrams/) — Diagram images (architecture, sequence, database, API flows, incident lifecycle, packages)
+- [docs/FLOWS.md](docs/FLOWS.md) — Check lifecycle, how the dashboard is computed, incidents
+- [docs/SERVICES.md](docs/SERVICES.md) — Backend and frontend services
+- [docs/SECURITY.md](docs/SECURITY.md) — Security summary and recommendations
+- [docs/TESTING.md](docs/TESTING.md) — How to run tests and where they live
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Build and deployment
+- [docs/MAINTENANCE.md](docs/MAINTENANCE.md) — Dependencies, migrations, logs, health checks
+- [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — Naming and code style
 
-```sh
-pnpm -C apps/worker dev
-```
+---
 
-Dashboard Angular :
+## License
 
-```sh
-pnpm -C apps/dashboard/dashboard start
-```
+ISC.

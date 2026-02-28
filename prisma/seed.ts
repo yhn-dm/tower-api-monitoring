@@ -1,3 +1,6 @@
+/**
+ * Seed script: creates initial providers and endpoints for development/demo.
+ */
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
@@ -314,8 +317,365 @@ async function main() {
 
   ];
 
+  const extraProvidersBase = [
+    {
+      slug: "gcp",
+      name: "Google Cloud Platform",
+      logoUrl: "https://cloud.google.com/favicon.ico",
+      homeUrl: "https://cloud.google.com",
+      apiUrl: "https://status.cloud.google.com",
+    },
+    {
+      slug: "oraclecloud",
+      name: "Oracle Cloud",
+      logoUrl: "https://www.oracle.com/favicon.ico",
+      homeUrl: "https://cloud.oracle.com",
+      apiUrl: "https://www.oracle.com/cloud/status/",
+    },
+    {
+      slug: "ibmcloud",
+      name: "IBM Cloud",
+      logoUrl: "https://www.ibm.com/favicon.ico",
+      homeUrl: "https://cloud.ibm.com",
+      apiUrl: "https://status.cloud.ibm.com",
+    },
+    {
+      slug: "ovhcloud",
+      name: "OVHcloud",
+      logoUrl: "https://www.ovhcloud.com/favicon.ico",
+      homeUrl: "https://www.ovhcloud.com",
+      apiUrl: "https://status.ovhcloud.com",
+    },
+    {
+      slug: "scaleway",
+      name: "Scaleway",
+      logoUrl: "https://www.scaleway.com/favicon.ico",
+      homeUrl: "https://www.scaleway.com",
+      apiUrl: "https://status.scaleway.com",
+    },
+    {
+      slug: "linode",
+      name: "Linode",
+      logoUrl: "https://www.linode.com/favicon.ico",
+      homeUrl: "https://www.linode.com",
+      apiUrl: "https://status.linode.com",
+    },
+    {
+      slug: "vultr",
+      name: "Vultr",
+      logoUrl: "https://www.vultr.com/favicon.ico",
+      homeUrl: "https://www.vultr.com",
+      apiUrl: "https://status.vultr.com",
+    },
+    {
+      slug: "hetzner",
+      name: "Hetzner",
+      logoUrl: "https://www.hetzner.com/favicon.ico",
+      homeUrl: "https://www.hetzner.com",
+      apiUrl: "https://status.hetzner.com",
+    },
+    {
+      slug: "flyio",
+      name: "Fly.io",
+      logoUrl: "https://fly.io/favicon.ico",
+      homeUrl: "https://fly.io",
+      apiUrl: "https://status.fly.io",
+    },
+    {
+      slug: "render",
+      name: "Render",
+      logoUrl: "https://render.com/favicon.ico",
+      homeUrl: "https://render.com",
+      apiUrl: "https://status.render.com",
+    },
+    {
+      slug: "fastly",
+      name: "Fastly",
+      logoUrl: "https://www.fastly.com/favicon.ico",
+      homeUrl: "https://www.fastly.com",
+      apiUrl: "https://status.fastly.com",
+    },
+    {
+      slug: "akamai",
+      name: "Akamai",
+      logoUrl: "https://www.akamai.com/favicon.ico",
+      homeUrl: "https://www.akamai.com",
+      apiUrl: "https://www.akamai.com/global-services/support/system-status",
+    },
+    {
+      slug: "datadog",
+      name: "Datadog",
+      logoUrl: "https://www.datadoghq.com/favicon.ico",
+      homeUrl: "https://www.datadoghq.com",
+      apiUrl: "https://api.datadoghq.com/api/v1/validate",
+    },
+    {
+      slug: "newrelic",
+      name: "New Relic",
+      logoUrl: "https://newrelic.com/favicon.ico",
+      homeUrl: "https://newrelic.com",
+      apiUrl: "https://status.newrelic.com",
+    },
+    {
+      slug: "sentry",
+      name: "Sentry",
+      logoUrl: "https://sentry.io/_static/6b76c/favicon.ico",
+      homeUrl: "https://sentry.io",
+      apiUrl: "https://status.sentry.io",
+    },
+    {
+      slug: "rollbar",
+      name: "Rollbar",
+      logoUrl: "https://rollbar.com/favicon.ico",
+      homeUrl: "https://rollbar.com",
+      apiUrl: "https://status.rollbar.com",
+    },
+    {
+      slug: "honeycomb",
+      name: "Honeycomb",
+      logoUrl: "https://www.honeycomb.io/favicon.ico",
+      homeUrl: "https://www.honeycomb.io",
+      apiUrl: "https://status.honeycomb.io",
+    },
+    {
+      slug: "uptimerobot",
+      name: "UptimeRobot",
+      logoUrl: "https://uptimerobot.com/favicon.ico",
+      homeUrl: "https://uptimerobot.com",
+      apiUrl: "https://api.uptimerobot.com/v2/getAccountDetails",
+    },
+    {
+      slug: "pingdom",
+      name: "Pingdom",
+      logoUrl: "https://www.pingdom.com/favicon.ico",
+      homeUrl: "https://www.pingdom.com",
+      apiUrl: "https://status.pingdom.com",
+    },
+    {
+      slug: "sendgrid",
+      name: "SendGrid",
+      logoUrl: "https://sendgrid.com/favicon.ico",
+      homeUrl: "https://sendgrid.com",
+      apiUrl: "https://status.sendgrid.com",
+    },
+    {
+      slug: "mailgun",
+      name: "Mailgun",
+      logoUrl: "https://www.mailgun.com/favicon.ico",
+      homeUrl: "https://www.mailgun.com",
+      apiUrl: "https://status.mailgun.com",
+    },
+    {
+      slug: "postmark",
+      name: "Postmark",
+      logoUrl: "https://postmarkapp.com/favicon.ico",
+      homeUrl: "https://postmarkapp.com",
+      apiUrl: "https://status.postmarkapp.com",
+    },
+    {
+      slug: "mailchimp",
+      name: "Mailchimp",
+      logoUrl: "https://mailchimp.com/favicon.ico",
+      homeUrl: "https://mailchimp.com",
+      apiUrl: "https://mailchimp.com/api",
+    },
+    {
+      slug: "sparkpost",
+      name: "SparkPost",
+      logoUrl: "https://www.sparkpost.com/favicon.ico",
+      homeUrl: "https://www.sparkpost.com",
+      apiUrl: "https://status.sparkpost.com",
+    },
+    {
+      slug: "twilio",
+      name: "Twilio",
+      logoUrl: "https://www.twilio.com/favicon.ico",
+      homeUrl: "https://www.twilio.com",
+      apiUrl: "https://status.twilio.com",
+    },
+    {
+      slug: "vonage",
+      name: "Vonage",
+      logoUrl: "https://www.vonage.com/favicon.ico",
+      homeUrl: "https://www.vonage.com",
+      apiUrl: "https://status.nexmo.com",
+    },
+    {
+      slug: "messagebird",
+      name: "MessageBird",
+      logoUrl: "https://www.messagebird.com/favicon.ico",
+      homeUrl: "https://www.messagebird.com",
+      apiUrl: "https://status.messagebird.com",
+    },
+    {
+      slug: "pusher",
+      name: "Pusher",
+      logoUrl: "https://pusher.com/favicon.ico",
+      homeUrl: "https://pusher.com",
+      apiUrl: "https://status.pusher.com",
+    },
+    {
+      slug: "ably",
+      name: "Ably",
+      logoUrl: "https://ably.com/favicon.ico",
+      homeUrl: "https://ably.com",
+      apiUrl: "https://status.ably.com",
+    },
+    {
+      slug: "algolia",
+      name: "Algolia",
+      logoUrl: "https://www.algolia.com/static_assets/images/favicon.6c3bda7f.ico",
+      homeUrl: "https://www.algolia.com",
+      apiUrl: "https://status.algolia.com",
+    },
+    {
+      slug: "auth0",
+      name: "Auth0",
+      logoUrl: "https://auth0.com/favicon.ico",
+      homeUrl: "https://auth0.com",
+      apiUrl: "https://status.auth0.com",
+    },
+    {
+      slug: "okta",
+      name: "Okta",
+      logoUrl: "https://www.okta.com/favicon.ico",
+      homeUrl: "https://www.okta.com",
+      apiUrl: "https://trust.okta.com",
+    },
+    {
+      slug: "firebase",
+      name: "Firebase",
+      logoUrl: "https://firebase.google.com/favicon.ico",
+      homeUrl: "https://firebase.google.com",
+      apiUrl: "https://status.firebase.google.com",
+    },
+    {
+      slug: "planetscale",
+      name: "PlanetScale",
+      logoUrl: "https://planetscale.com/favicon.ico",
+      homeUrl: "https://planetscale.com",
+      apiUrl: "https://status.planetscale.com",
+    },
+    {
+      slug: "neon",
+      name: "Neon",
+      logoUrl: "https://neon.tech/favicon.ico",
+      homeUrl: "https://neon.tech",
+      apiUrl: "https://status.neon.tech",
+    },
+    {
+      slug: "cockroachdb",
+      name: "CockroachDB Cloud",
+      logoUrl: "https://www.cockroachlabs.com/favicon.ico",
+      homeUrl: "https://www.cockroachlabs.com",
+      apiUrl: "https://status.cockroachlabs.com",
+    },
+    {
+      slug: "mongodbatlas",
+      name: "MongoDB Atlas",
+      logoUrl: "https://www.mongodb.com/assets/images/global/favicon.ico",
+      homeUrl: "https://www.mongodb.com/cloud/atlas",
+      apiUrl: "https://status.cloud.mongodb.com",
+    },
+    {
+      slug: "upstash",
+      name: "Upstash",
+      logoUrl: "https://upstash.com/favicon.ico",
+      homeUrl: "https://upstash.com",
+      apiUrl: "https://status.upstash.com",
+    },
+    {
+      slug: "backblaze",
+      name: "Backblaze B2",
+      logoUrl: "https://www.backblaze.com/favicon.ico",
+      homeUrl: "https://www.backblaze.com",
+      apiUrl: "https://status.backblaze.com",
+    },
+    {
+      slug: "wasabi",
+      name: "Wasabi",
+      logoUrl: "https://wasabi.com/favicon.ico",
+      homeUrl: "https://wasabi.com",
+      apiUrl: "https://status.wasabi.com",
+    },
+    {
+      slug: "cloudinary",
+      name: "Cloudinary",
+      logoUrl: "https://cloudinary.com/favicon.ico",
+      homeUrl: "https://cloudinary.com",
+      apiUrl: "https://status.cloudinary.com",
+    },
+    {
+      slug: "dockerhub",
+      name: "Docker Hub",
+      logoUrl: "https://hub.docker.com/favicon.ico",
+      homeUrl: "https://hub.docker.com",
+      apiUrl: "https://www.dockerstatus.com",
+    },
+    {
+      slug: "npmjs",
+      name: "npm Registry",
+      logoUrl: "https://www.npmjs.com/favicon.ico",
+      homeUrl: "https://www.npmjs.com",
+      apiUrl: "https://status.npmjs.org",
+    },
+    {
+      slug: "pypi",
+      name: "PyPI",
+      logoUrl: "https://pypi.org/static/images/favicon.6a76275d.ico",
+      homeUrl: "https://pypi.org",
+      apiUrl: "https://status.python.org",
+    },
+    {
+      slug: "circleci",
+      name: "CircleCI",
+      logoUrl: "https://circleci.com/favicon.ico",
+      homeUrl: "https://circleci.com",
+      apiUrl: "https://status.circleci.com",
+    },
+    {
+      slug: "jira",
+      name: "Jira Cloud",
+      logoUrl: "https://www.atlassian.com/favicon.ico",
+      homeUrl: "https://www.atlassian.com/software/jira",
+      apiUrl: "https://jira.atlassian.com",
+    },
+    {
+      slug: "trello",
+      name: "Trello",
+      logoUrl: "https://trello.com/favicon.ico",
+      homeUrl: "https://trello.com",
+      apiUrl: "https://trello.status.atlassian.com",
+    },
+    {
+      slug: "asana",
+      name: "Asana",
+      logoUrl: "https://asana.com/favicon.ico",
+      homeUrl: "https://asana.com",
+      apiUrl: "https://status.asana.com",
+    },
+    {
+      slug: "linear",
+      name: "Linear",
+      logoUrl: "https://linear.app/favicon.ico",
+      homeUrl: "https://linear.app",
+      apiUrl: "https://status.linear.app",
+    },
+  ];
+
+  for (const b of extraProvidersBase) {
+    providers.push({
+      slug: b.slug,
+      name: b.name,
+      logoUrl: b.logoUrl,
+      endpoints: [
+        { url: b.homeUrl, description: "Homepage" },
+        { url: b.apiUrl, description: "API / Status" },
+      ],
+    });
+  }
+
   for (const p of providers) {
-    // Vérifier si le provider existe
     let provider = await prisma.provider.findUnique({
       where: { slug: p.slug }
     });
@@ -333,7 +693,6 @@ async function main() {
       console.log(`↻ Provider already exists: ${provider.name}`);
     }
 
-    // Endpoints : upsert un par un
     for (const ep of p.endpoints) {
       const exists = await prisma.endpoint.findFirst({
         where: { url: ep.url }

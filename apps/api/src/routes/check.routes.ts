@@ -1,3 +1,6 @@
+/**
+ * Serves the timeline of check results for a given provider (by slug).
+ */
 import { Router, type IRouter } from "express";
 import { CheckService } from "../services/check.service";
 

@@ -1,0 +1,197 @@
+<!-- Incident history page: filters, severity stats, list with type and resolved state. -->
+<div class="py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-foreground">
+      Incident History
+    </h1>
+    <p class="text-sm text-muted-foreground mt-1">
+      Recent incidents across all monitored providers
+    </p>
+  </div>
+
+  <div class="monitoring-card mb-6" *ngIf="!loading">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-6 text-sm">
+        <div>
+          <span class="text-muted-foreground">
+            Total incidents (24h):
+          </span>
+          <span class="font-medium text-foreground">
+            {{ recentIncidentsCount }}
+          </span>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Down events: </span>
+          <span class="font-medium text-[hsl(var(--status-down))]">
+            {{ severityStats.down }}
+          </span>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Degraded events: </span>
+          <span class="font-medium text-[hsl(var(--status-degraded))]">
+            {{ severityStats.degraded }}
+          </span>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Ongoing: </span>
+          <span class="font-medium">{{ ongoingCount }}</span>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Resolved: </span>
+          <span class="font-medium text-muted-foreground">{{ resolvedCount }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            filter === 'all'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setFilter('all')">
+          All
+        </button>
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            filter === 'down'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setFilter('down')">
+          Down
+        </button>
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            filter === 'degraded'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setFilter('degraded')">
+          Degraded
+        </button>
+        <span class="w-px h-5 bg-border mx-1" aria-hidden="true"></span>
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            statusFilter === 'all'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setStatusFilter('all')">
+          All
+        </button>
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            statusFilter === 'ongoing'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setStatusFilter('ongoing')">
+          Ongoing
+        </button>
+        <button class="inline-flex items-center px-3 py-1.5 rounded-md border text-xs font-medium transition-colors"
+          [ngClass]="
+            statusFilter === 'resolved'
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-background text-foreground border-border hover:bg-muted'
+          " (click)="setStatusFilter('resolved')">
+          Resolved
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-border">
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-muted-foreground uppercase tracking-wide w-24">
+          Severity split
+        </span>
+        <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden flex">
+          <div class="bg-[hsl(var(--status-down))] h-full transition-all" [style.width.%]="severityStats.downPercent">
+          </div>
+          <div class="bg-[hsl(var(--status-degraded))] h-full transition-all"
+            [style.width.%]="severityStats.degradedPercent"></div>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-[hsl(var(--status-down))]"></span>
+            <span class="text-muted-foreground">
+              {{ severityStats.downPercent | number : '1.0-0' }}%
+            </span>
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-[hsl(var(--status-degraded))]"></span>
+            <span class="text-muted-foreground">
+              {{ severityStats.degradedPercent | number : '1.0-0' }}%
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-border">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs text-muted-foreground uppercase tracking-wide mr-2">
+          Filter by provider:
+        </span>
+        <button *ngFor="let provider of uniqueProviders" (click)="toggleProviderFilter(provider)"
+          class="text-xs px-2.5 py-1 rounded-full border transition-colors" [ngClass]="
+            providerFilter === provider
+              ? 'bg-foreground text-background border-foreground'
+              : 'bg-card text-muted-foreground border-border hover:border-foreground/30'
+          ">
+          {{ provider }}
+        </button>
+        <button *ngIf="providerFilter" (click)="clearProviderFilter()"
+          class="text-xs px-2 py-1 text-muted-foreground hover:text-foreground flex items-center gap-1">
+          ✕ Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="monitoring-card text-center py-12 text-muted-foreground">
+    Loading incidents...
+  </div>
+
+  <div *ngIf="!loading && filteredIncidents.length === 0"
+    class="monitoring-card text-center py-12 text-muted-foreground">
+    No incidents found with current filters.
+  </div>
+
+  <div *ngIf="!loading && filteredIncidents.length > 0" class="mt-6 space-y-3">
+    <div *ngFor="let incident of filteredIncidents"
+      class="monitoring-card flex flex-col md:flex-row items-start md:items-center justify-between gap-3 transition-opacity"
+      [class.opacity-75]="isResolved(incident)" [class.border-muted]="isResolved(incident)">
+      <div class="flex items-start gap-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-semibold" [ngClass]="
+            incident.type === 'down'
+              ? 'bg-[hsl(var(--status-down-bg))] text-[hsl(var(--status-down))]'
+              : 'bg-[hsl(var(--status-degraded-bg))] text-[hsl(var(--status-degraded))]'
+          ">
+          {{ incident.type === 'down' ? 'Down' : 'Degraded' }}
+        </span>
+        <span *ngIf="isResolved(incident)"
+          class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/15 text-green-600 dark:text-green-400">
+          Resolved
+        </span>
+        <div>
+          <div class="text-sm font-medium text-foreground">
+            {{ getProviderLabel(incident) }}
+          </div>
+          <div class="text-xs text-muted-foreground mt-0.5">
+            {{ incident.message }}
+          </div>
+        </div>
+      </div>
+      <div class="text-xs text-muted-foreground text-right md:text-left">
+        <div>
+          Start:
+          <span class="font-medium">
+            {{ incident.startAt | date : 'dd/MM/yyyy HH:mm:ss' }}
+          </span>
+        </div>
+        <div *ngIf="incident.endAt">
+          Resolved at:
+          <span class="font-medium">
+            {{ incident.endAt | date : 'dd/MM/yyyy HH:mm:ss' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

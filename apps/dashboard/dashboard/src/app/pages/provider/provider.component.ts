@@ -1,8 +1,11 @@
+/**
+ * Provider detail page: latency chart, incidents list, latency history from API.
+ */
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { DashboardService, ProviderDashboardRow, Incident} from '../../services/dashboard.service';
-import { Chart, registerables } from 'chart.js';
+import { DashboardService, ProviderDashboardRow, Incident, LatencyPoint } from '../../services/dashboard.service';
+import { Chart, registerables, Plugin } from 'chart.js';
 
 Chart.register(...registerables);
 
@@ -18,6 +21,7 @@ export class ProviderComponent implements OnInit, AfterViewInit {
 
   provider!: ProviderDashboardRow;
   incidents: Incident[] = [];
+  latencyHistory: LatencyPoint[] = [];
   loading = true;
 
   @ViewChild('latencyChart') latencyChartRef!: ElementRef<HTMLCanvasElement>;
@@ -35,15 +39,18 @@ export class ProviderComponent implements OnInit, AfterViewInit {
     this.dash.getProvider(slug).subscribe((data: ProviderDashboardRow) => {
       this.provider = data;
 
-      // fetch incidents
-      fetch(`http://localhost:3000/incidents/${data.providerId}`)
-        .then(r => r.json())
-        .then(inc => {
-          this.incidents = inc;
-          this.loading = false;
+      this.dash.getLatencyHistory(slug, 300, 5).subscribe((history: LatencyPoint[]) => {
+        this.latencyHistory = history;
 
-          setTimeout(() => this.renderLatencyChart(), 50);
-        });
+        fetch(`http://localhost:3000/incidents/${data.providerId}`)
+          .then(r => r.json())
+          .then(inc => {
+            this.incidents = inc;
+            this.loading = false;
+
+            setTimeout(() => this.renderLatencyChart(), 50);
+          });
+      });
     });
   }
 
@@ -55,24 +62,78 @@ renderLatencyChart() {
   const ctx = this.latencyChartRef.nativeElement.getContext("2d");
   if (!ctx) return;
 
-  const labels = ["-5h", "-4h", "-3h", "-2h", "-1h", "Now"];
-
   const base = this.provider.avgLatency3h ?? 0;
   const last = this.provider.lastLatency ?? 0;
 
-  const history = [
-    base * 0.92,
-    base * 0.95,
-    base * 1.05,
-    base * 1.12,
-    last * 0.95,
-    last
-  ];
+  let historyValues: number[];
+  let labels: string[];
 
-  // gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-  gradient.addColorStop(0, "rgba(59, 130, 246, 0.35)");
-  gradient.addColorStop(1, "rgba(59, 130, 246, 0)");
+  if (this.latencyHistory && this.latencyHistory.length > 0) {
+    historyValues = this.latencyHistory.map(p => p.latencyMs);
+
+    // Labels like -5h/-4h/.../Now; we only show full hours on the axis to keep it readable.
+    const lastTs = new Date(this.latencyHistory[this.latencyHistory.length - 1].timestamp).getTime();
+    labels = this.latencyHistory.map((p, idx) => {
+      const ts = new Date(p.timestamp).getTime();
+      const diffMinutes = Math.round((lastTs - ts) / 60000);
+
+      if (diffMinutes === 0 || idx === this.latencyHistory.length - 1) {
+        return 'Now';
+      }
+
+      if (diffMinutes % 60 === 0) {
+        const hours = diffMinutes / 60;
+        return `-${hours}h`;
+      }
+
+      return '';
+    });
+  } else {
+    historyValues = [
+      base * 0.92,
+      base * 0.95,
+      base * 1.05,
+      base * 1.12,
+      last * 0.95,
+      last
+    ];
+    labels = ["-5h", "-4h", "-3h", "-2h", "-1h", "Now"];
+  }
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, this.latencyChartRef.nativeElement.height || 256);
+  gradient.addColorStop(0, "rgba(59, 130, 246, 0.2)");
+  gradient.addColorStop(1, "rgba(59, 130, 246, 0.02)");
+
+  const targetLatency = base || last;
+
+  const targetLatencyLine: Plugin<'line'> = {
+    id: 'target-latency-line',
+    afterDraw: (chart) => {
+      if (!targetLatency) return;
+      const yScale = chart.scales['y'];
+      if (!yScale) return;
+
+      const y = yScale.getPixelForValue(targetLatency);
+      const { ctx } = chart;
+      const { left, right } = chart.chartArea;
+
+      ctx.save();
+      ctx.strokeStyle = 'hsl(215, 16%, 80%)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left, y);
+      ctx.lineTo(right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = 'hsl(215, 16%, 47%)';
+      ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Target latency', right + 8, y);
+      ctx.restore();
+    },
+  };
 
   this.latencyChart = new Chart(ctx, {
     type: "line",
@@ -81,14 +142,16 @@ renderLatencyChart() {
       datasets: [
         {
           label: "Latency (ms)",
-          data: history,
+          data: historyValues,
           borderColor: "rgb(59, 130, 246)",
           backgroundColor: gradient,
-          borderWidth: 2.5,
+          borderWidth: 2,
           fill: true,
           tension: 0.35,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          // line only; points show on hover
+          pointRadius: 0,
+          pointHitRadius: 8,
+          pointHoverRadius: 5,
           pointBorderColor: "#fff",
           pointBackgroundColor: "rgb(59, 130, 246)",
         },
@@ -96,6 +159,7 @@ renderLatencyChart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       animation: { duration: 700 },
       plugins: {
         legend: { display: false },
@@ -111,14 +175,19 @@ renderLatencyChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: "#64748b", font: { size: 12 } }
+          ticks: { color: "hsl(215, 16%, 47%)", font: { size: 11 } }
         },
         y: {
-          grid: { color: "rgba(148,163,184,0.15)" },
-          ticks: { color: "#64748b", font: { size: 12 } }
+          grid: { color: "rgba(148,163,184,0.2)" },
+          beginAtZero: true,
+          ticks: {
+            color: "hsl(215, 16%, 47%)",
+            font: { size: 11 }
+          }
         }
       }
-    }
+    },
+    plugins: [targetLatencyLine]
   });
 }
 

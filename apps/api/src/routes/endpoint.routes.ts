@@ -1,3 +1,6 @@
+/**
+ * Legacy: list all endpoints and create (used by the provider flow).
+ */
 import { Router, type IRouter } from "express";
 import { EndpointService } from "../services/endpoint.service";
 

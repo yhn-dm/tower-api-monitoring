@@ -1,14 +1,17 @@
 {
   "name": "api-tower-clean",
   "version": "1.0.0",
-  "description": "",
+  "description": "Tower API Monitoring — monorepo (API, dashboard, worker)",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
     "test": "vitest",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "build": "echo workspace"
+    "build": "echo workspace",
+    "test:worker": "vitest run apps/worker/tests",
+    "test:api": "vitest run apps/api/tests",
+    "test:web": "cd apps/dashboard/web-react && pnpm test"
   },
   "keywords": [],
   "author": "",
@@ -38,5 +41,9 @@
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.19"
+  },
+  "optionalDependencies": {
+    "@types/supertest": "^2.0.16",
+    "supertest": "^7.2.2"
   }
 }

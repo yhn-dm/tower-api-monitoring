@@ -1,3 +1,6 @@
+/**
+ * Shared dashboard row shape (contract between API and consumers).
+ */
 export interface ProviderDashboardRow {
   providerId: number;
   slug: string;

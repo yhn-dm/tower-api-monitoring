@@ -1,9 +1,9 @@
+/**
+ * Lists incidents (all of them or filtered by provider id).
+ */
 import { prisma } from "../utils/prisma";
 
 export class IncidentService {
-  /**
-   * Retourne tous les incidents (utile pour debug)
-   */
   async getAll() {
     return prisma.incidentEvent.findMany({
       orderBy: { startAt: "desc" },
@@ -11,10 +11,7 @@ export class IncidentService {
     });
   }
 
-  /**
-   * Retourne tous les incidents d’un provider
-   */
-  async getByProvider(providerId: number) {
+  async fetchByProviderId(providerId: number) {
     return prisma.incidentEvent.findMany({
       where: { providerId },
       orderBy: { startAt: "desc" }

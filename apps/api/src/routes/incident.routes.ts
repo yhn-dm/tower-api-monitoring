@@ -1,3 +1,6 @@
+/**
+ * Lists incidents (all or by provider id).
+ */
 import { Router, type IRouter } from "express";
 import { IncidentService } from "../services/incident.service";
 
@@ -10,7 +13,7 @@ router.get("/", async (_req, res) => {
 });
 
 router.get("/:providerId", async (req, res) => {
-  res.json(await service.getByProvider(Number(req.params.providerId)));
+  res.json(await service.fetchByProviderId(Number(req.params.providerId)));
 });
 
 export default router;

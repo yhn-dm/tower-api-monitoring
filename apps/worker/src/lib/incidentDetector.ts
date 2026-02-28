@@ -1,15 +1,16 @@
+/**
+ * Opens or closes incidents based on check results (down or high latency).
+ */
 import { prisma } from "@tower/db";
-import { Prisma } from "@prisma/client";
-
 import { CheckStatus } from "@prisma/client";
 
-// Détermine si un status représente une indispo
+const DEGRADED_LATENCY_MS = 2001;
+
 function isDownStatus(status: CheckStatus) {
   return status === "DOWN" || status === "TIMEOUT" || status === "ERROR";
 }
 
-export async function detectIncident(providerId: number) {
-  // Récupère tous les endpoints du provider
+export async function evaluateProviderIncident(providerId: number) {
   const endpoints = await prisma.endpoint.findMany({
     where: { providerId },
     include: {
@@ -20,41 +21,51 @@ export async function detectIncident(providerId: number) {
     }
   });
 
-  // Si aucun endpoint → ignorer
   if (endpoints.length === 0) return;
 
-  // Est-ce qu'au moins un endpoint est DOWN ?
-  const providerIsDown = endpoints.some((ep: any )=> {
+  const hasDown = endpoints.some((ep: any) => {
     const last = ep.checks[0];
     return last ? isDownStatus(last.status) : false;
   });
 
-  // Incident en cours ?
+  const hasHighLatency = endpoints.some((ep: any) => {
+    const last = ep.checks[0];
+    if (!last || last.status !== "UP") return false;
+    const lat = last.latencyMs ?? 0;
+    return lat >= DEGRADED_LATENCY_MS;
+  });
+
+  const providerIsDown = hasDown;
+  const providerIsDegraded = !hasDown && hasHighLatency;
+  const hasProblem = providerIsDown || providerIsDegraded;
+
   const openIncident = await prisma.incidentEvent.findFirst({
     where: { providerId, endAt: null },
     orderBy: { startAt: "desc" }
   });
 
-  // ------ OUVERTURE INCIDENT ------
-  if (providerIsDown && !openIncident) {
+  if (hasProblem && !openIncident) {
+    const type = providerIsDown ? "DOWN" : "SLOW";
+    const message = providerIsDown
+      ? "Service unavailable"
+      : "High latency (degraded)";
     await prisma.incidentEvent.create({
       data: {
         providerId,
         startAt: new Date(),
-        type: "DOWN",
-        message: "Service unavailable"
+        type,
+        message
       }
     });
-    console.log(`⚠ Incident ouvert pour provider ${providerId}`);
+    console.log(`[incident] Opened ${type} for provider ${providerId}`);
     return;
   }
 
-  // ------ FERMETURE INCIDENT ------
-  if (!providerIsDown && openIncident) {
+  if (!hasProblem && openIncident) {
     await prisma.incidentEvent.update({
       where: { id: openIncident.id },
       data: { endAt: new Date() }
     });
-    console.log(`✔ Incident fermé pour provider ${providerId}`);
+    console.log(`[incident] Closed for provider ${providerId}`);
   }
 }

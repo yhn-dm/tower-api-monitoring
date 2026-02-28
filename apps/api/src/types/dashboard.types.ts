@@ -1,3 +1,6 @@
+/**
+ * One row per provider with aggregated metrics and status.
+ */
 export interface ProviderDashboardRow {
   providerId: number;
   slug: string;
@@ -16,4 +19,5 @@ export interface ProviderDashboardRow {
 
   avgResponseSize: number | null;
   lastCheckAt: Date | null;
+  primaryEndpointUrl: string | null;
 }
