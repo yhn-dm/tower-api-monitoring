@@ -2,22 +2,46 @@
 
 Monitor external APIs, track uptime and latency, and see incidents in one place. You get a real-time dashboard, a backend API, and a worker that runs HTTP checks and keeps everything up to date.
 
-**Who it’s for:** Teams that want a simple, self-hosted way to watch multiple API providers and react when something goes down or gets slow.
+**Who it's for:** Teams that want a simple, self-hosted way to watch multiple API providers and react when something goes down or gets slow.
 
 **Stack:** Angular 17 (dashboard), Express (API), Node (worker), Prisma, MySQL. Monorepo with pnpm workspaces.
+
+---
+
+## Screenshots (UI)
+
+<p align="center"><strong>Dashboard</strong></p>
+<p align="center"><img src="screenshots/dashboard.png" alt="Dashboard" width="100%"></p>
+
+<p align="center"><strong>Incidents</strong></p>
+<p align="center"><img src="screenshots/incidents.png" alt="Incidents" width="100%"></p>
+
+<p align="center"><strong>Provider detail</strong></p>
+<p align="center"><img src="screenshots/provider.png" alt="Provider" width="100%"></p>
+
+<p align="center"><strong>API Management (list)</strong></p>
+<p align="center"><img src="screenshots/API Management.png" alt="API Management" width="100%"></p>
+
+<p align="center"><strong>API Management (opened)</strong></p>
+<p align="center"><img src="screenshots/API Management Opened.png" alt="API Management Opened" width="100%"></p>
+
+<p align="center"><strong>Provider page (API opened)</strong></p>
+<p align="center"><img src="screenshots/API Opened.png" alt="API Opened" width="100%"></p>
+
+---
 
 ## Flow overview (sequence)
 
 How the dashboard loads data and how the worker runs checks and evaluates incidents:
 
-![Sequence: dashboard load and worker tick](docs/diagrams/sequence.png)
+<p align="center"><img src="docs/diagrams/sequence.png" alt="Sequence: dashboard load and worker tick" width="100%"></p>
 
 ---
 
 ## Contents
 
 - [What it does](#what-it-does)
-- [Screenshots and diagrams](#screenshots-and-diagrams)
+- [Architecture diagrams](#architecture-diagrams)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Launch](#launch)
@@ -43,19 +67,7 @@ Tower API Monitoring is an end-to-end health monitoring system. You define provi
 
 ---
 
-## Screenshots and diagrams
-
-### UI
-
-| Dashboard | Incidents | Provider detail |
-|-----------|-----------|-----------------|
-| ![Dashboard](screenshots/Dashboard.png) | ![Incidents](screenshots/Incidents.png) | ![Provider](screenshots/Provider.png) |
-
-| API Management (list) | API Management (opened) | Provider page (API opened) |
-|----------------------|-------------------------|----------------------------|
-| ![API Management](screenshots/API%20Management.png) | ![API Management Opened](screenshots/API%20Management%20Opened.png) | ![API Opened](screenshots/API%20Opened.png) |
-
-### Architecture and data
+## Architecture diagrams
 
 | High-level architecture | Monorepo packages |
 |-------------------------|-------------------|
